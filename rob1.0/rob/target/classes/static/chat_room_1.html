@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rob1.0 - Chat Room 1</title>
+</head>
+<body onload="connect()">
+
+<div>
+    <label>Nick: </label>
+    <input id="username"type="text"/><br>
+
+    <label>Podaj wiadomość: </label>
+    <input id="messageToSend"type="text"/><br>
+
+    <button onclick="sendMessage()">Wyślij</button>
+    <p id="response"></p>
+</div>
+<script src="js.js"></script>
+<script src="stomp.js"></script>
+</body>
+</html>
