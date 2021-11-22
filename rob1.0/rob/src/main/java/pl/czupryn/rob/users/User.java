@@ -1,17 +1,33 @@
 package pl.czupryn.rob.users;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Scanner;
 
+@Entity(name = "Users")
 public class User {
 
+    @Id
+    @GeneratedValue
+    private Long id;
+    @Column(name = "username", nullable = false)
     private String username;
+    @Column(name = "password", nullable = false)
     private String password;
 
     public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public User(Long id, String username, String password) {
+        this.id = id;
         this.username = username;
         this.password = password;
     }
