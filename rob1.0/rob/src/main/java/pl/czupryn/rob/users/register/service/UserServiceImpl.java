@@ -24,11 +24,10 @@ public class UserServiceImpl implements  UserService {
         String status = "";
         String username = user.getUsername();
         String password = user.getPassword();
-
+        List<User> allUsers = findAllUsers();
 
         username = username.replaceAll(" ", "_");//usuwanie wszystkich spacji z nicku
-
-        List<User> allUsers = findAllUsers();
+        password = password.replaceAll(" ", "_"); //usuwanie spacji z hasła
 
         boolean okNick = true;
         for (User user1: allUsers) {
@@ -41,8 +40,9 @@ public class UserServiceImpl implements  UserService {
             }
         }   //sprawdzanie czy nick jest zajety
             //jeżeli error jest inny niż "" to znaczy że nick powtarza się w db przyniajmniej raz
+        if (password.length() < 5 || password.length() > 24){error = "Hasło ma nieodpowiednią długość";}
+        if (username.length() < 3 || username.length() > 20){error = "Nick ma nieodpowiednią długość";}
 
-        password = password.replaceAll(" ", "_"); //usuwanie spacji z hasła
         user.setUsername(username);
         user.setPassword(password);
 

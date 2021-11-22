@@ -27,60 +27,9 @@ public class RegisterController {
     }
 
     @GetMapping("/register")
-    public String get(Model model) {
-//        model.addAttribute("user", userToShow);
-//        model.addAttribute("error", error);
-//        model.addAttribute("status", status);
-//        model.addAttribute("newUser", new User());
+    public String get() {
         return "register";
     }
-
-//    @PostMapping("/register-user")
-//    public String addUser(@ModelAttribute User user) {
-//        userToShow = user;
-//        if (!addNewUser) {
-//            status = "";
-//            addNewUser(user);
-//        }
-//        return "redirect:/register";
-//    }
-
-    public void addNewUser(User userToAdd) {
-        String username = userToAdd.getUsername();
-        String password = userToAdd.getPassword();
-        boolean incorrectPassword = false;
-
-        username = username.replaceAll(" ", "_");//usuwanie wszystkich spacji z nicku
-
-        List<User> allUsers = userService.findAllUsers();
-
-        boolean okNick = true;
-        for (User user: allUsers) {
-            if (user.getUsername().equals(username)) {
-                error = "Ten nick jest zajęty";
-                okNick = false;
-                addNewUser = false;
-            } else if (okNick){
-                error = "";
-            }
-        }
-         //sprawdzanie czy nick jest zajety
-
-        password = password.replaceAll(" ", "_"); //usuwanie spacji z hasła
-        userToAdd.setUsername(username);
-        userToAdd.setPassword(password);
-
-        if (error == "") {
-            userService.saveUser(userToAdd);
-//                    System.out.println("Użytkownik " + username + " dodany!");
-            addNewUser = false;
-            userToShow = userToAdd;
-            status = "Użytkownik " + userToAdd.getUsername() + " został dodany!";
-        }
-
-
-    }
-
 
     //nowe
     @PostMapping
