@@ -30,7 +30,7 @@ public class LogInController {
         model.addAttribute("userToLogIn", new User());
         model.addAttribute("actualUser", actualUser);
         model.addAttribute("status", status);
-        return "login";
+        return "logIn/login";
     }
 
     @PostMapping("/login-user")

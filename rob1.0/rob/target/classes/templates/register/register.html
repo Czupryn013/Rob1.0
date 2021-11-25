@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rob1.0 - Register</title>
+</head>
+<body>
+
+<!--<form th:action="@{/register-user}" th:object = "${newUser}" method="post">-->
+<!--  <p>Username: <input type="text" minlength="3" maxlength="20" th:field = "*{username}"></p>-->
+<!--  <p>Password: <input type="password" minlength="5" maxlength="24"th:field = "*{password}"></p>-->
+<!--  <p th:text = "${error}"></p>-->
+<!--  <input type="submit" value="Submit"/>-->
+<!--</form>-->
+
+<!--<p th:text = "${user.getUsername}"></p>-->
+<!--<p th:text = "${user.getPassword}"></p>-->
+<!--<p th:text = "${status}"></p>-->
+
+<form method="post">
+  <p>Username: <input type="text" minlength="3" maxlength="20" name="username" id="username"></p>
+  <p>Password: <input type="password" minlength="5" maxlength="24" name="password" id="password"></p>
+  <button onclick="addUser()" type="button">Add User</button>
+</form>
+<span th:if="${errorMessage}"  th:text="${errorMessage}">Error</span>
+<p th:text = "${message}"></p>
+
+<script>
+
+  function addUser() {
+  var username = document.getElementById("username").value;
+  var password = document.getElementById("password").value;
+
+  fetch('http://localhost:8080/users/register', {
+    method : 'POST',
+    headers : {'Content-Type' : 'application/json'},
+    body : JSON.stringify({
+      "username": username,
+      "password": password
+    })
+  })
+       document.getElementById("username").value = "";
+       document.getElementById("password").value = "";
+}
+</script>
+
+
+</body>
+</html>
