@@ -1,11 +1,15 @@
 package pl.czupryn.rob.users.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import pl.czupryn.rob.users.model.Role;
 import pl.czupryn.rob.users.repository.UserRepo;
-import pl.czupryn.rob.users.User;
+import pl.czupryn.rob.users.model.User;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -18,13 +22,15 @@ public class UserServiceImpl implements  UserService {
         this.userRepo = userRepo;
     }
 
+//    USER AND ADMIN
     @Override
-    public String saveUser(User user) {
+    public ResponseEntity<String> saveUser(User user) {
         String error = "";
         String status = "";
         String username = user.getUsername();
         String password = user.getPassword();
-        List<User> allUsers = findAllUsers();
+        String url = "users/"+ user.getId();
+        List<User> allUsers = findUsers();
 
         username = username.replaceAll(" ", "_");//usuwanie wszystkich spacji z nicku
         password = password.replaceAll(" ", "_"); //usuwanie spacji z hasła
@@ -51,23 +57,36 @@ public class UserServiceImpl implements  UserService {
             userRepo.save(user);
             status = "Użytkownik " + user.getUsername() + " został dodany!";
             //System.out.println("Użytkownik " + username + " dodany!");
-            return status;
+            return new ResponseEntity<>(url + " | " + status, HttpStatus.OK);
         } else {
-            return error;
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    //ADMIN
+    @Override
+    public ResponseEntity<List<User>> findAllUsers() {
+        try {
+            return new ResponseEntity<>(userRepo.findAll(), HttpStatus.OK);
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
         }
     }
 
     @Override
-    public List<User> findAllUsers() {
+    public List<User> findUsers() {
         return userRepo.findAll();
     }
 
+//    ADMIN
     @Override
-    public User findUserById(Long id) {
-        Optional<User> userById = userRepo.findById(id);
-        if (userById.isPresent()){
-            return userById.get();
+    public ResponseEntity<User> findUserById(Long id) {
+        try {
+            Optional<User> userById = userRepo.findById(id);
+            return new ResponseEntity<>(userById.get(), HttpStatus.OK);
+//            throw new RuntimeException("User nie istnieje w bazie danych");
+        } catch(NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
         }
-        throw new RuntimeException("User nie istnieje w bazie danych");
     }
 }

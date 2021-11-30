@@ -1,13 +1,16 @@
 package pl.czupryn.rob.users.service;
 
-import pl.czupryn.rob.users.User;
+import org.springframework.http.ResponseEntity;
+import pl.czupryn.rob.users.model.User;
 
 import java.util.List;
 
 public interface UserService {
-    public String saveUser(User user);
+    public ResponseEntity<String> saveUser(User user);
 
-    List<User> findAllUsers();
+    ResponseEntity<List<User>> findAllUsers();
 
-    User findUserById(Long id);
+    List<User> findUsers();
+
+    ResponseEntity<User> findUserById(Long id);
 }
