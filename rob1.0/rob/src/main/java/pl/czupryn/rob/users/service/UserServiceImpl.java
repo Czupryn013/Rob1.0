@@ -1,26 +1,25 @@
 package pl.czupryn.rob.users.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import pl.czupryn.rob.users.model.Role;
-import pl.czupryn.rob.users.repository.UserRepo;
 import pl.czupryn.rob.users.model.User;
+import pl.czupryn.rob.users.repository.UserRepo;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements  UserService {
 
     private final UserRepo userRepo;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserServiceImpl(UserRepo userRepo) {
-        this.userRepo = userRepo;
-    }
+
 
 //    USER AND ADMIN
     @Override
@@ -51,15 +50,16 @@ public class UserServiceImpl implements  UserService {
         System.out.println(error);
 
         user.setUsername(username);
-        user.setPassword(password);
+        user.setPassword(passwordEncoder.encode(password));
 
         if (error == "") {
             userRepo.save(user);
+            Optional<User> byUsername = userRepo.findByUsername(username);
             status = "Użytkownik " + user.getUsername() + " został dodany!";
             //System.out.println("Użytkownik " + username + " dodany!");
             return new ResponseEntity<>(url + " | " + status, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
         }
     }
 

@@ -1,14 +1,16 @@
 package pl.czupryn.rob.users.model;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.Scanner;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
 
 @Entity(name = "Users")
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue
@@ -67,6 +69,33 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+    //UserDetails
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_"+role.name()));
+    }
 
     @Override
     public String toString() {
@@ -76,5 +105,13 @@ public class User {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) && Objects.equals(username, user.username) && Objects.equals(password, user.password) && role == user.role;
     }
+
+}
 
