@@ -1,6 +1,7 @@
 package pl.czupryn.rob.users;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.czupryn.rob.users.model.User;
@@ -34,17 +35,37 @@ public class UserController {
     @PostMapping("/register")
     @ResponseBody
     public ResponseEntity<String> addUserToDB (@RequestBody User user) {
-        return userService.saveUser(user);
+        String status = userService.saveUser(user);
+        if (status.charAt(0) == 'e') {
+            return new ResponseEntity<>(status, HttpStatus.NOT_ACCEPTABLE);
+        } else {
+            return new ResponseEntity<>(status, HttpStatus.OK);
+        }
     }
 
     @GetMapping
     public ResponseEntity<List<User>> getAll() {
-        return userService.findAllUsers();
+        List<User> allUsersList = userService.findAllUsers();
+        if (allUsersList == null) {
+            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(allUsersList, HttpStatus.OK);
+        }
     }
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<User> getById(@PathVariable Long id) {
-        return userService.findUserById(id);
+        User user1 = userService.findUserById(id);
+        if (user1 == null) {
+            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(user1, HttpStatus.OK);
+        }
+    }
+
+    @GetMapping(path = "/{username}")
+    public ResponseEntity<User> getUsername(@PathVariable String username) {
+        return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 
 }

@@ -23,13 +23,13 @@ public class UserServiceImpl implements  UserService {
 
 //    USER AND ADMIN
     @Override
-    public ResponseEntity<String> saveUser(User user) {
+    public String saveUser(User user) {
         String error = "";
         String status = "";
         String username = user.getUsername();
         String password = user.getPassword();
-        String url = "users/"+ user.getId();
-        List<User> allUsers = findUsers();
+        String url;
+        List<User> allUsers = findAllUsers();
 
         username = username.replaceAll(" ", "_");//usuwanie wszystkich spacji z nicku
         password = password.replaceAll(" ", "_"); //usuwanie spacji z hasła
@@ -54,39 +54,37 @@ public class UserServiceImpl implements  UserService {
 
         if (error == "") {
             userRepo.save(user);
-            Optional<User> byUsername = userRepo.findByUsername(username);
+            User user1 = userRepo.findByUsername(username).get();
+            url = "url: users/"+ user.getId();
             status = "Użytkownik " + user.getUsername() + " został dodany!";
             //System.out.println("Użytkownik " + username + " dodany!");
-            return new ResponseEntity<>(url + " | " + status, HttpStatus.OK);
+            return url + " | " + status;
         } else {
-            return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+            return "error: " + error;
         }
     }
 
     //ADMIN
     @Override
-    public ResponseEntity<List<User>> findAllUsers() {
+    public List<User> findAllUsers() {
         try {
-            return new ResponseEntity<>(userRepo.findAll(), HttpStatus.OK);
+            return userRepo.findAll();
         } catch (NullPointerException e) {
-            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+            return null;
         }
     }
 
-    @Override
-    public List<User> findUsers() {
-        return userRepo.findAll();
-    }
 
 //    ADMIN
     @Override
-    public ResponseEntity<User> findUserById(Long id) {
+    public User findUserById(Long id) {
         try {
             Optional<User> userById = userRepo.findById(id);
-            return new ResponseEntity<>(userById.get(), HttpStatus.OK);
-//            throw new RuntimeException("User nie istnieje w bazie danych");
+            return userById.get();
+//            return new ResponseEntity<>(userById.get(), HttpStatus.OK);
         } catch(NoSuchElementException e) {
-            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+//            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+            return null;
         }
     }
 }

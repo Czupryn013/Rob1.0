@@ -6,11 +6,10 @@ import pl.czupryn.rob.users.model.User;
 import java.util.List;
 
 public interface UserService {
-    public ResponseEntity<String> saveUser(User user);
 
-    ResponseEntity<List<User>> findAllUsers();
+    String saveUser(User user);
 
-    List<User> findUsers();
+    List<User> findAllUsers();
 
-    ResponseEntity<User> findUserById(Long id);
+    User findUserById(Long id);
 }
