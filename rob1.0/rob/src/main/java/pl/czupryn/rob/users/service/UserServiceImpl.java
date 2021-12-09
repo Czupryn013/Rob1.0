@@ -3,8 +3,10 @@ package pl.czupryn.rob.users.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.czupryn.rob.users.model.Role;
 import pl.czupryn.rob.users.model.User;
 import pl.czupryn.rob.users.repository.UserRepo;
 
@@ -19,9 +21,6 @@ public class UserServiceImpl implements  UserService {
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
 
-
-
-//    USER AND ADMIN
     @Override
     public String saveUser(User user) {
         String error = "";
@@ -57,14 +56,12 @@ public class UserServiceImpl implements  UserService {
             User user1 = userRepo.findByUsername(username).get();
             url = "url: users/"+ user.getId();
             status = "Użytkownik " + user.getUsername() + " został dodany!";
-            //System.out.println("Użytkownik " + username + " dodany!");
             return url + " | " + status;
         } else {
             return "error: " + error;
         }
     }
 
-    //ADMIN
     @Override
     public List<User> findAllUsers() {
         try {
@@ -74,8 +71,6 @@ public class UserServiceImpl implements  UserService {
         }
     }
 
-
-//    ADMIN
     @Override
     public User findUserById(Long id) {
         try {
@@ -87,4 +82,38 @@ public class UserServiceImpl implements  UserService {
             return null;
         }
     }
+
+    @Override
+    public String updatePassword(Long id, String password) {
+
+        try {
+            password = new BCryptPasswordEncoder().encode(password);
+            userRepo.updatePassword(id, password);
+            return "password updated";
+        } catch(NoSuchElementException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public String updateUsername(Long id, String username) {
+        try {
+            userRepo.updateUsername(id, username);
+            return "username updated";
+        } catch(NoSuchElementException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public String updateRole(Long userId, Role uRole) {
+        try {
+            userRepo.updateRole(userId, uRole);
+            return "role updated";
+        } catch(NoSuchElementException e) {
+            return null;
+        }
+    }
 }
+
+
