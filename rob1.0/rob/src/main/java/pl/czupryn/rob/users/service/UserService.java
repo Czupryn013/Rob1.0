@@ -23,5 +23,7 @@ public interface UserService {
     @Transactional
     String updateRole(Long userId, Role uRole);
 
+    String addFriend(Long userId, Long friendId);
+
 
 }

@@ -60,4 +60,14 @@ public class AdminController {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @DeleteMapping(path = "users/delete/{id}")
+    public ResponseEntity<String> deleteById(@PathVariable Long id){
+        try {
+            userRepo.deleteById(id);
+            return new ResponseEntity<>("user with id: " + id + " deleted", HttpStatus.OK);
+        } catch(NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
 }

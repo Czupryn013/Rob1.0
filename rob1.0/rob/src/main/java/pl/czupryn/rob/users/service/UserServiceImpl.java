@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.czupryn.rob.exceptions.UserNotFoundException;
 import pl.czupryn.rob.users.model.Role;
 import pl.czupryn.rob.users.model.User;
 import pl.czupryn.rob.users.repository.UserRepo;
@@ -113,6 +114,16 @@ public class UserServiceImpl implements  UserService {
         } catch(NoSuchElementException e) {
             return null;
         }
+    }
+
+    @Override
+    public String addFriend(Long userId, Long friendId) {
+        User friend = userRepo.findById(friendId).orElseThrow(() -> new UserNotFoundException("user not found"));
+
+        User user = userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found"));
+        user.getFriends().add(friend);
+        userRepo.save(user);
+        return null;
     }
 }
 
