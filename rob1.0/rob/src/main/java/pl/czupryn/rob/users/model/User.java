@@ -45,6 +45,15 @@ public class User implements UserDetails {
         return friends;
     }
 
+    public List<UserDto> getFriendsDto() {
+        List<UserDto> friendsDto = new ArrayList<>();
+        for (User friend: friends) {
+            friendsDto.add(UserDto.from(friend));
+        }
+
+        return friendsDto;
+    }
+
     public void setFriends(List<User> friends) {
         this.friends = friends;
     }

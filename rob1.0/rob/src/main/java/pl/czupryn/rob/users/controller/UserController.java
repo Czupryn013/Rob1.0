@@ -10,6 +10,7 @@ import pl.czupryn.rob.exceptions.UserNotFoundException;
 import pl.czupryn.rob.users.model.Role;
 import pl.czupryn.rob.users.model.User;
 import pl.czupryn.rob.users.model.UserDto;
+import pl.czupryn.rob.users.model.UserFullDto;
 import pl.czupryn.rob.users.repository.UserRepo;
 import pl.czupryn.rob.users.service.UserServiceImpl;
 
@@ -58,21 +59,24 @@ public class UserController {
 
     //tylko użytkownik ma dostęp do metod poniżej
 
-    @PreAuthorize("#username == authentication.name")
-    @GetMapping(path = "/{username}")
-    public ResponseEntity<User> getUser(@PathVariable String username) {
-        User user = userRepo.findByUsername(username).get();
+    @GetMapping(path = "/me")
+    public ResponseEntity<UserFullDto> getUser() {
+        Long myId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+
+        User user = userService.findUserById(myId);
         if (user == null) {
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
         } else {
-            return new ResponseEntity<>(user, HttpStatus.OK);
+
+            return new ResponseEntity<>(UserFullDto.from(user), HttpStatus.OK);
         }
     }
 
-    @PreAuthorize("#username == authentication.name")
-    @GetMapping(path = "/{username}/password")
-    public ResponseEntity<String> getPassword(@PathVariable String username) {
-        User user = userRepo.findByUsername(username).get();
+    @GetMapping(path = "/me/password")
+    public ResponseEntity<String> getPassword() {
+        Long myId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+
+        User user = userService.findUserById(myId);
         if (user == null) {
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
         } else {
@@ -80,40 +84,32 @@ public class UserController {
         }
     }
 
-    @PreAuthorize("#username == authentication.name")
-    @GetMapping(path = "/{username}/username")
-    public ResponseEntity<String> getUsername(@PathVariable String username) {
-        User user = userRepo.findByUsername(username).get();
-        if (user == null) {
+    @GetMapping(path = "/me/username")
+    public ResponseEntity<String> getUsername() {
+        User user1 =((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        String username = user1.getUsername();
+
+        if (username == "anonymousUser") {
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
         } else {
-            return new ResponseEntity<>(user.getUsername(), HttpStatus.OK);
+            return new ResponseEntity<>(username, HttpStatus.OK);
         }
     }
 
-//    @GetMapping(path = "/me/username")
-//    public ResponseEntity<String> getUsername() {
-//        String username =((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-//        User user = userRepo.findByUsername(username).get();
-//        if (user == null) {
-//            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-//        } else {
-//            return new ResponseEntity<>(user.getUsername(), HttpStatus.OK);
-//        }
-//    }
+    @GetMapping(path = "/me/role")
+    public ResponseEntity<String> getRole() {//@ControllerAdvice //mock
+        User user1 =((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        String username = user1.getUsername();
 
-
-    @PreAuthorize("#username == authentication.name")
-    @GetMapping(path = "/{username}/role")
-    public ResponseEntity<String> getRole(@PathVariable String username) {//@ControllerAdvice //mock
-        User user = userRepo.findByUsername(username).orElse(null);
-        if (user == null) {
+        if (username == "anonymousUser") {
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
         } else {
-            return new ResponseEntity<>(user.getRole().name(), HttpStatus.OK);
+            return new ResponseEntity<>(user1.getRole().name(), HttpStatus.OK);
         }
     }
 
+
+    //patch methods
     @PreAuthorize("#username == authentication.name")
     @PatchMapping(path = "/{username}/password")
     public ResponseEntity<String> patchPassword(@PathVariable String username, @RequestBody String password) {
@@ -136,6 +132,8 @@ public class UserController {
         }
     }
 
+    //friends methods
+
     @PreAuthorize("#username == authentication.name")
     @PostMapping(path = "/{username}/friends/add")
     public ResponseEntity<String> addFriend(@PathVariable String username, @RequestBody Long id) {
@@ -145,9 +143,12 @@ public class UserController {
         return null;
     }
 
-    @PreAuthorize("#username == authentication.name")
-    @GetMapping(path = "/{username}/friends")
-    public ResponseEntity<List<UserDto>> getFriends(@PathVariable String username) {
+    // post jeszcze nie zmieniam na users/me...
+    @GetMapping(path = "/me/friends")
+    public ResponseEntity<List<UserDto>> getFriends() {
+        User user1 =((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        String username = user1.getUsername();
+
         List<User> friends = userRepo.findByUsername(username).get().getFriends();
         List<UserDto> friendsDTO = new ArrayList<>();
         for (User friend : friends) {
@@ -157,19 +158,23 @@ public class UserController {
         return new ResponseEntity<>(friendsDTO, HttpStatus.OK);
     }
 
-    @PreAuthorize("#username == authentication.name")
-    @GetMapping(path = "/{username}/friends/{id}")
-    public ResponseEntity<UserDto> getFriendById(@PathVariable String username, @PathVariable Long id) {
+    @GetMapping(path = "/me/friends/{id}")
+    public ResponseEntity<UserDto> getFriendById(@PathVariable Long id) {
+        String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+
         List<User> friends = userRepo.findByUsername(username).get().getFriends();
         UserDto friendById = new UserDto();
         for (User friend : friends) {
             if (friend.getId() == id) {
                 friendById = UserDto.from(friend);
-            } else {
-                friendById =  null;
             }
         }
-        return new ResponseEntity<>(friendById, HttpStatus.OK);
+        if (friendById.getUsername() != null && friendById.getId() != null) {
+            return new ResponseEntity<>(friendById, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+        }
+
 
     }
 
