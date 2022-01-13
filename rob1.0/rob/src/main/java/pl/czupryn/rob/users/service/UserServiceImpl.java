@@ -88,9 +88,13 @@ public class UserServiceImpl implements  UserService {
     public String updatePassword(Long id, String password) {
 
         try {
-            password = new BCryptPasswordEncoder().encode(password);
-            userRepo.updatePassword(id, password);
-            return "password updated";
+            if (password.length() < 5 || password.length() > 24){
+                return "Hasło ma nieodpowiednią długość";
+            } else {
+                password = new BCryptPasswordEncoder().encode(password);
+                userRepo.updatePassword(id, password);
+                return "password updated";
+            }
         } catch(NoSuchElementException e) {
             return null;
         }
@@ -99,8 +103,12 @@ public class UserServiceImpl implements  UserService {
     @Override
     public String updateUsername(Long id, String username) {
         try {
-            userRepo.updateUsername(id, username);
-            return "username updated";
+            if (username.length() < 3 || username.length() > 20){
+                return "Nick ma nieodpowiednią długość";
+            } else {
+                userRepo.updateUsername(id, username);
+                return "username updated";
+            }
         } catch(NoSuchElementException e) {
             return null;
         }

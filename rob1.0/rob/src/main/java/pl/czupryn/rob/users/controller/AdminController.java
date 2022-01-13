@@ -3,13 +3,12 @@ package pl.czupryn.rob.users.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pl.czupryn.rob.users.model.Role;
 import pl.czupryn.rob.users.model.User;
 import pl.czupryn.rob.users.model.UserDto;
 import pl.czupryn.rob.users.repository.UserRepo;
-import pl.czupryn.rob.users.service.UserServiceImpl;
+import pl.czupryn.rob.users.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +17,10 @@ import java.util.NoSuchElementException;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
-    private final UserServiceImpl userService;
+    private final UserService userService;
     private final UserRepo userRepo;
 
-    public AdminController(UserServiceImpl userService, UserRepo userRepo) {
+    public AdminController(UserService userService, UserRepo userRepo) {
         this.userService = userService;
         this.userRepo = userRepo;
     }
@@ -61,8 +60,8 @@ public class AdminController {
         }
     }
 
-    @DeleteMapping(path = "users/delete/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable Long id){
+    @DeleteMapping(path = "users/delete")
+    public ResponseEntity<String> deleteById(@RequestBody Long id){
         try {
             userRepo.deleteById(id);
             return new ResponseEntity<>("user with id: " + id + " deleted", HttpStatus.OK);

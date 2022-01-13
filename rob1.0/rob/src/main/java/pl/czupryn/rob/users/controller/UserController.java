@@ -1,46 +1,48 @@
 package pl.czupryn.rob.users.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import pl.czupryn.rob.exceptions.UserNotFoundException;
 import pl.czupryn.rob.users.model.Role;
 import pl.czupryn.rob.users.model.User;
 import pl.czupryn.rob.users.model.UserDto;
 import pl.czupryn.rob.users.model.UserFullDto;
 import pl.czupryn.rob.users.repository.UserRepo;
-import pl.czupryn.rob.users.service.UserServiceImpl;
+import pl.czupryn.rob.users.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.NoSuchElementException; // localhost == 127.0.0.1
+
+//amigos code fullstack
 
 // przepisać na resty, czyli niech,
 // zobacz jak działa spring security. Spróbuj autentykacji po bazie danych.
 // UserdetailsService , UserDetails
 //@Controlleradvice
-
+@Slf4j
 @RestController
 @RequestMapping("/users")
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class UserController {
 
-    private final UserServiceImpl userService;
+    private final UserService userService;
     private final UserRepo userRepo;
 
     @Autowired
-    public UserController(UserServiceImpl userService, UserRepo userRepo) {
+    public UserController(UserService userService, UserRepo userRepo) {
         this.userService = userService;
         this.userRepo = userRepo;
     }
 
-    @GetMapping("/register")
-    public String get() {
-        return "register/register";
-    }
+//    @GetMapping("/register")
+//    public String get() {
+//        return "register/register";
+//    }
     //nie ważne     ^
     //              |
 
@@ -48,6 +50,7 @@ public class UserController {
     @PostMapping("/register")
     @ResponseBody
     public ResponseEntity<String> addUserToDB (@RequestBody User user) {
+        user.setRole(Role.USER);
         String status = userService.saveUser(user);
         if (status.charAt(0) == 'e') {
             return new ResponseEntity<>(status, HttpStatus.NOT_ACCEPTABLE);
@@ -55,7 +58,6 @@ public class UserController {
             return new ResponseEntity<>(status, HttpStatus.OK);
         }
     }
-
 
     //tylko użytkownik ma dostęp do metod poniżej
 
@@ -74,9 +76,7 @@ public class UserController {
 
     @GetMapping(path = "/me/password")
     public ResponseEntity<String> getPassword() {
-        Long myId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
-
-        User user = userService.findUserById(myId);
+        User user =((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         if (user == null) {
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
         } else {
@@ -110,22 +110,24 @@ public class UserController {
 
 
     //patch methods
-    @PreAuthorize("#username == authentication.name")
-    @PatchMapping(path = "/{username}/password")
-    public ResponseEntity<String> patchPassword(@PathVariable String username, @RequestBody String password) {
+    @PatchMapping(path = "/me/password")
+    public ResponseEntity<String> patchPassword(@RequestBody String password) {
         try {
-            String status = userService.updatePassword(userRepo.findByUsername(username).get().getId(), password);
+            Long myId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+
+            String status = userService.updatePassword(myId, password);
             return new ResponseEntity<>(status, HttpStatus.OK);
         } catch(NoSuchElementException e) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
 
-    @PreAuthorize("#username == authentication.name")
-    @PatchMapping(path = "/{username}/username")
-    public ResponseEntity<String> patchUsername(@PathVariable String username, @RequestBody String userName) {
+    @PatchMapping(path = "/me/username")
+    public ResponseEntity<String> patchUsername(@RequestBody String userName) {
         try {
-            String status = userService.updateUsername(userRepo.findByUsername(username).get().getId(), userName);
+            Long myId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+
+            String status = userService.updateUsername(myId, userName);
             return new ResponseEntity<>(status, HttpStatus.OK);
         } catch(NoSuchElementException e) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
@@ -134,16 +136,21 @@ public class UserController {
 
     //friends methods
 
-    @PreAuthorize("#username == authentication.name")
-    @PostMapping(path = "/{username}/friends/add")
-    public ResponseEntity<String> addFriend(@PathVariable String username, @RequestBody Long id) {
-        Long myId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+    @PostMapping(path = "/me/friends/add")
+    public ResponseEntity<String> addFriend(@RequestBody Long friendsId) {
+        try {
+            Long myId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
 
-        userService.addFriend(myId,id);
-        return null;
+            userService.addFriend(myId,friendsId);
+            userService.addFriend(friendsId,myId);
+            return new ResponseEntity<>("Friend with id "+friendsId + "added.", HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
 
-    // post jeszcze nie zmieniam na users/me...
+    // post ani patch jeszcze nie zmieniam na users/me
+
     @GetMapping(path = "/me/friends")
     public ResponseEntity<List<UserDto>> getFriends() {
         User user1 =((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());

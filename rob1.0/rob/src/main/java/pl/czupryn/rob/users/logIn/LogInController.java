@@ -20,14 +20,14 @@ public class LogInController {
     private User actualUser = new User();
     private boolean logInNewUser = false;
 
-    @GetMapping("/login")
-    public String get(Model model) {
-        model.addAttribute("error", error);
-        model.addAttribute("userToLogIn", new User());
-        model.addAttribute("actualUser", actualUser);
-        model.addAttribute("status", status);
-        return "logIn/login";
-    }
+//    @GetMapping("/login")
+//    public String get(Model model) {
+//        model.addAttribute("error", error);
+//        model.addAttribute("userToLogIn", new User());
+//        model.addAttribute("actualUser", actualUser);
+//        model.addAttribute("status", status);
+//        return "logIn/login";
+//    }
 
     @PostMapping("/login-user")
     public String logInUser(@ModelAttribute User user) {
