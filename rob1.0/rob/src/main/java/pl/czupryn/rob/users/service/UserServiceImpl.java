@@ -47,7 +47,6 @@ public class UserServiceImpl implements  UserService {
             //jeżeli error jest inny niż "" to znaczy że nick powtarza się w db przyniajmniej raz
         if (password.length() < 5 || password.length() > 24){error = "Hasło ma nieodpowiednią długość";}
         if (username.length() < 3 || username.length() > 20){error = "Nick ma nieodpowiednią długość";}
-        System.out.println(error);
 
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
@@ -86,10 +85,10 @@ public class UserServiceImpl implements  UserService {
 
     @Override
     public String updatePassword(Long id, String password) {
-
         try {
+            password = password.replaceAll(" ", "_"); //usuwanie spacji z hasła
             if (password.length() < 5 || password.length() > 24){
-                return "Hasło ma nieodpowiednią długość";
+                return "error: Hasło ma nieodpowiednią długość";
             } else {
                 password = new BCryptPasswordEncoder().encode(password);
                 userRepo.updatePassword(id, password);
@@ -103,11 +102,28 @@ public class UserServiceImpl implements  UserService {
     @Override
     public String updateUsername(Long id, String username) {
         try {
-            if (username.length() < 3 || username.length() > 20){
-                return "Nick ma nieodpowiednią długość";
+            List<User> allUsers = findAllUsers();
+
+            String newUsername = username.replaceAll(" ", "_");//usuwanie wszystkich spacji z nicku
+            boolean okNick = true;
+            String error = "";
+            for (User user1: allUsers) {
+                if (user1.getUsername().equals(username)) {
+                    error = "Ten nick jest zajęty";
+                    System.out.println(error);
+                    okNick = false;
+                } else if (okNick){
+                    error = "";
+                }
+            }
+            if (username.length() < 3 || username.length() > 20){error = "Nick ma nieodpowiednią długość";}
+
+            if (error == "") {
+                userRepo.updateUsername(id, newUsername);
+                String status = "Nick został zmieniony!";
+                return status;
             } else {
-                userRepo.updateUsername(id, username);
-                return "username updated";
+                return "error: " + error;
             }
         } catch(NoSuchElementException e) {
             return null;

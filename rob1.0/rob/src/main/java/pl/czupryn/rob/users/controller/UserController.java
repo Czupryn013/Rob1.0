@@ -69,7 +69,6 @@ public class UserController {
         if (user == null) {
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
         } else {
-
             return new ResponseEntity<>(UserFullDto.from(user), HttpStatus.OK);
         }
     }
@@ -108,15 +107,19 @@ public class UserController {
         }
     }
 
-
     //patch methods
     @PatchMapping(path = "/me/password")
     public ResponseEntity<String> patchPassword(@RequestBody String password) {
         try {
             Long myId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
-
             String status = userService.updatePassword(myId, password);
-            return new ResponseEntity<>(status, HttpStatus.OK);
+            if (status.charAt(0) == 'e') {
+                return new ResponseEntity<>(status, HttpStatus.NOT_ACCEPTABLE);
+            } else {
+                return new ResponseEntity<>(status, HttpStatus.OK);
+            }
+
+//            return new ResponseEntity<>(status, HttpStatus.OK);
         } catch(NoSuchElementException e) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
@@ -126,9 +129,14 @@ public class UserController {
     public ResponseEntity<String> patchUsername(@RequestBody String userName) {
         try {
             Long myId = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
-
             String status = userService.updateUsername(myId, userName);
-            return new ResponseEntity<>(status, HttpStatus.OK);
+
+            if (status.charAt(0) == 'e') {
+                return new ResponseEntity<>(status, HttpStatus.NOT_ACCEPTABLE);
+            } else {
+                return new ResponseEntity<>(status, HttpStatus.OK);
+            }
+//            return new ResponseEntity<>(status, HttpStatus.OK);
         } catch(NoSuchElementException e) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
